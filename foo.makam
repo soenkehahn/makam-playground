@@ -1,0 +1,27 @@
+
+f : int -> int -> prop.
+f A B <- mult 2 A B.
+
+map : (A -> B -> prop) -> list A -> list B -> prop.
+map F nil nil.
+map F (cons A R) (cons A' R') <- F A A', map F R R'.
+
+filter : (int -> bool -> prop) -> list int -> list int -> prop.
+filter Pred nil nil.
+filter Pred (cons A R) (cons A R') <- Pred A true, filter Pred R R'.
+filter Pred (cons A R) R' <- Pred A false, filter Pred R R'.
+
+neg : bool -> bool -> prop.
+neg true false.
+neg false true.
+
+pred : int -> bool -> prop.
+pred X Result <- lessthan X 3 Lt, neg Lt Result.
+
+list : list int -> prop.
+list B <- (map f [1, 2, 3] A), filter pred A B.
+
+printAll : (A -> prop) -> prop.
+printAll P <- P X, print X, failure.
+
+printAll list?
