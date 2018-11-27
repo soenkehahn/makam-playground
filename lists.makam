@@ -43,3 +43,18 @@ t_append X <-
 >> t_append X?
 >> Yes:
 >> X := catList (fun n => cons 1 (cons 2 (cons 3 (cons 4 n)))).
+
+reverse : catList A -> catList A -> prop.
+reverse (catList (fun nil => nil)) (catList (fun nil => nil)).
+reverse
+  (catList (fun nil => cons A (R nil)))
+  (catList (pfun nil => R' (cons A nil))) <-
+  reverse (catList R) (catList R').
+
+t_reverse : catList int -> prop.
+t_reverse X <-
+  oneTwoThree List,
+  reverse List X.
+>> t_reverse X?
+>> Yes:
+>> X := catList (fun nil => cons 3 (cons 2 (cons 1 nil))).
