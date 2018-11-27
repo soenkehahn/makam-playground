@@ -49,7 +49,7 @@ reverse (catList (fun nil => nil)) (catList (fun nil => nil)).
 reverse
   (catList (fun nil => cons A (R nil)))
   (catList (pfun nil => R' (cons A nil))) <-
-  reverse (catList R) (catList R').
+    reverse (catList R) (catList R').
 
 t_reverse : catList int -> prop.
 t_reverse X <-
@@ -58,3 +58,19 @@ t_reverse X <-
 >> t_reverse X?
 >> Yes:
 >> X := catList (fun nil => cons 3 (cons 2 (cons 1 nil))).
+
+map : (A -> B -> prop) -> catList A -> catList B -> prop.
+map F (catList (fun nil => nil)) (catList (fun nil => nil)).
+map F
+  (catList (fun nil => cons A (R nil)))
+  (catList (fun nil => cons A' (R' nil))) <-
+    F A A',
+    map F (catList R) (catList R').
+
+t_map : catList int -> prop.
+t_map X <-
+  oneTwoThree List,
+  map (pfun X => mult 2 X) List X.
+>> t_map X?
+>> Yes:
+>> X := catList (fun nil => cons 2 (cons 4 (cons 6 nil))).
