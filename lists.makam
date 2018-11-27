@@ -1,0 +1,34 @@
+tests : testsuite.
+
+%testsuite tests.
+
+catList : type -> type.
+catList : (list A -> list A) -> catList A.
+
+cons : A -> catList A -> catList A -> prop.
+cons A (catList (fun n => List n)) (catList (fun n => cons A (List n))).
+
+oneTwoThree : catList int -> prop.
+oneTwoThree (catList (fun n => cons 1 (cons 2 (cons 3 n)))).
+
+t_cons : catList int -> prop.
+t_cons X <-
+  oneTwoThree List,
+  cons 4 List X.
+>> t_cons X?
+>> Yes:
+>> X := catList (fun n => cons 4 (cons 1 (cons 2 (cons 3 n)))).
+
+concat : catList A -> catList A -> catList A -> prop.
+concat
+  (catList (fun nil => A nil))
+  (catList (fun nil => B nil))
+  (catList (fun nil => A (B nil))).
+
+t_concat : catList int -> prop.
+t_concat X <-
+  oneTwoThree List,
+  concat List List X.
+t_concat X?
+>> Yes:
+>> X := catList (fun n => cons 1 (cons 2 (cons 3 (cons 1 (cons 2 (cons 3 n)))))).
