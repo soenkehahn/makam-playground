@@ -1,82 +1,20 @@
-map : (A -> B -> prop) -> list A -> list B -> prop.
-map F nil nil.
-map F (cons A R) (cons A' R') <- F A A', map F R R'.
-
-myAppend : list A -> A -> list A -> prop.
-myAppend nil A (cons A nil).
-myAppend (cons A R) X (cons A Rec) <- myAppend R X Rec.
-
-lfold : (Acc -> A -> Acc -> prop) -> Acc -> list A -> Acc -> prop.
-lfold F Acc nil Acc.
-lfold F Acc (cons A R) Result <-
-  F Acc A Next,
-  lfold F Next R Result.
-
-lsum : list int -> int -> prop.
-lsum List Result <-
-  lfold plus 0 List Result.
-
-option : type -> type.
-some : A -> option A.
-none : option A.
-
-withDefault : option A -> A -> A -> prop.
-withDefault (some A) _ A.
-withDefault none A A.
-
-map : (A -> B -> prop) -> option A -> option B -> prop.
-map F none none.
-map F (some A) (some B) <- F A B.
-
-tree : type -> type.
-leaf : A -> tree A.
-node : tree A -> A -> tree A -> tree A.
-
-fold : (Acc -> A -> Acc -> prop) -> Acc -> tree A -> Acc -> prop.
-fold F Acc (leaf A) Result <- F Acc A Result.
-fold F Acc (node Left A Right) Result <-
-  fold F Acc Left LeftFold,
-  F LeftFold A AFold,
-  fold F AFold Right RightFold,
-  eq Result RightFold.
-
-toList : tree A -> list A -> prop.
-toList Tree List <- fold (fun acc a res => (myAppend acc a res)) [] Tree List.
-
-sum : tree int -> int -> prop.
-sum Tree Result <-
-  fold plus 0 Tree Result.
-
-formatTree : tree int -> string -> prop.
-formatTree (leaf N) Result <- tostring N Result.
-formatTree (node Left A Right) Result <-
-  formatTree Left LeftString,
-  formatTree Right RightString,
-  tostring A AString,
-  expansion.str `+-- ${AString}\n  +-- ${LeftString}\n  +-- ${RightString}` Result.
-
-test : int -> prop.
-test A <-
-  eq (X : list (tree int)) [leaf 1, leaf 2], (* leaf 1, leaf 2, node (leaf 3) 4 (leaf 5)], *)
-  lfold (pfun Acc Tree result => sum Tree TreeResult, plus Acc 1 result) 0 X A.
-
-
-test2 : string -> prop.
-test2 X <- formatTree (node (leaf 1) 2 (leaf 3)) X.
-
 tests : testsuite.
 
 %testsuite tests.
 
-test2 X?
+mySum : list (list int) -> int -> prop.
+mySum List Result <-
+  foldl
+    (pfun Acc InnerList Res =>
+      print InnerList,
+      foldl plus 0 InnerList InnerListSum,
+      print InnerListSum,
+      plus Acc InnerListSum Res)
+    0 List Result.
+
+test_folds : int -> prop.
+test_folds A <-
+  mySum [[1], [2]] A.
+test_folds X?
 >> Yes:
->> X := "+-- ...\n".
-
-(test2 X, print_string `${X}\n`)?
-
-(*
-printAll : (A -> prop) -> prop.
-printAll P <- P X, print X, failure.
-
-printAll test2?
-*)
+>> X := 3.
