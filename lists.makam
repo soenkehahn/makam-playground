@@ -29,6 +29,17 @@ t_concat : catList int -> prop.
 t_concat X <-
   oneTwoThree List,
   concat List List X.
-t_concat X?
+>> t_concat X?
 >> Yes:
 >> X := catList (fun n => cons 1 (cons 2 (cons 3 (cons 1 (cons 2 (cons 3 n)))))).
+
+append : catList A -> A -> catList A -> prop.
+append (catList (fun nil => List nil)) A (catList (fun nil => List (cons A nil))).
+
+t_append : catList int -> prop.
+t_append X <-
+  oneTwoThree List,
+  append List 4 X.
+>> t_append X?
+>> Yes:
+>> X := catList (fun n => cons 1 (cons 2 (cons 3 (cons 4 n)))).
