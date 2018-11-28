@@ -95,3 +95,17 @@ t_filter X <-
 >> t_filter X?
 >> Yes:
 >> X := catList (fun nil => cons 1 (cons 2 nil)).
+
+reduce : (Acc -> A -> Acc -> prop) -> Acc -> catList A -> Acc -> prop.
+reduce F Acc (catList (fun nil => nil)) Acc.
+reduce F Acc (catList (fun nil => cons A (R nil))) Acc'' <-
+  F Acc A Acc',
+  reduce F Acc' (catList R) Acc''.
+
+t_reduce : int -> prop.
+t_reduce X <-
+  oneTwoThree List,
+  reduce plus 0 List X.
+>> t_reduce X?
+>> Yes:
+>> X := 6.
