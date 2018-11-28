@@ -74,3 +74,24 @@ t_map X <-
 >> t_map X?
 >> Yes:
 >> X := catList (fun nil => cons 2 (cons 4 (cons 6 nil))).
+
+filter : (A -> prop) -> catList A -> catList A -> prop.
+filter F (catList (fun nil => nil)) (catList (fun nil => nil)).
+filter F
+  (catList (fun nil => cons A (R nil)))
+  (catList (fun nil => cons A (R' nil))) <-
+    F A,
+    filter F (catList R) (catList R').
+filter F
+  (catList (fun nil => cons A (R nil)))
+  (catList (fun nil => R' nil)) <-
+    not (F A),
+    filter F (catList R) (catList R').
+
+t_filter : catList int -> prop.
+t_filter X <-
+  oneTwoThree List,
+  filter (fun x => lessthan x 3 true) List X.
+>> t_filter X?
+>> Yes:
+>> X := catList (fun nil => cons 1 (cons 2 nil)).
