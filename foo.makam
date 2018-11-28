@@ -5,7 +5,7 @@ tests : testsuite.
 mySum : list (list int) -> int -> prop.
 mySum List Result <-
   foldl
-    (pfun Acc InnerList Res =>
+    (pfun Acc InnerList Res => [InnerListSum]
       print InnerList,
       foldl plus 0 InnerList InnerListSum,
       print InnerListSum,
