@@ -5,6 +5,11 @@ run with
 
 tests : testsuite. %testsuite tests.
 
+typ : type.
+
+tint : typ.
+tarrow : typ -> typ -> typ.
+forall : (typ -> typ) -> typ.
 
 term : type.
 
@@ -12,6 +17,9 @@ intconst : int -> term.
 add : term -> term -> term.
 app : term -> term -> term.
 lam : (term -> term) -> term.   (* lam (fun x => x) = λx.x *)
+lam : typ -> (term -> term) -> term.   (* lam (fun x => x) = λx.x *)
+tlam : (typ -> term) -> term.
+tapp : term -> typ -> term.
 
 
 eq (intconst 5) X ?
@@ -31,16 +39,12 @@ eval (app E1 E2) V :-
   eval E2 V2,
   eval (F V2) V.
 eval (lam F) (lam F).
-
-
-eval ( app (lam (fun x => add (intconst 5) x)) (intconst 10) ) X ?
->> Yes:
->> X := intconst 15.
-
-typ : type.
-
-tint : typ.
-tarrow : typ -> typ -> typ.
+eval (tlam T_F) (tlam T_F).
+eval (tapp Term Type) Result :-
+  eval Term (tlam T_F),
+  eval (T_F Type) Result.
+% type erasure :)
+eval (lam T F) (lam F).
 
 
 typecheck : term -> typ -> prop.
@@ -56,6 +60,14 @@ typecheck (lam F) (tarrow T T') :-
   (x:term ->
     typecheck x T ->
       typecheck (F x) T').
+typecheck (lam T F) (tarrow T T') :-
+  typecheck (lam F) (tarrow T T').
+typecheck (tlam T_F) (forall T) :-
+  (a:typ ->
+    typecheck (T_F a) (T a)).
+typecheck (tapp Term Type) Sigma' :-
+  typecheck Term (forall T_F),
+  unify (T_F Type) Sigma'.
 
 
 typecheck (lam (fun x => add (intconst 5) x)) T ?
@@ -71,59 +83,37 @@ typecheck (lam (fun x => x)) T ?
 >> Yes:
 >> T := tarrow T' T'.
 
+typecheck_and_eval : term -> typ -> term -> prop.
+typecheck_and_eval Program Type Result :-
+  typecheck Program Type,
+  eval Program Result.
+
 %  %trace+ eval.
-%  eval ( app (lam (fun x => app x x)) (lam (fun x => app x x)) ) X ?
+typecheck_and_eval ( app (lam (fun x => app x x)) (lam (fun x => app x x)) ) Type Result ?
+>> Impossible.
 
-%  typecheck_and_eval
+typecheck_and_eval ( app (lam (fun x => add (intconst 5) x)) (intconst 10) ) Type Result ?
+>> Yes:
+>> Type := tint,
+>> Result := intconst 15.
 
+typecheck ( app (lam tint (fun x => add (intconst 5) x)) (intconst 10) ) Type ?
+>> Yes:
+>> Type := tint.
 
+typecheck_and_eval ( app (lam tint (fun x => add (intconst 5) x)) (intconst 10) ) Type Result ?
+>> Yes:
+>> Type := tint,
+>> Result := intconst 15.
 
-(*
+typecheck (tlam (fun a => (lam a (fun x => x)))) Type ?
+>> Yes:
+>> Type := forall (fun a => tarrow a a).
 
-ctx = map variable type
+typecheck (tapp (tlam (fun a => (lam a (fun x => x)))) tint) Type ?
+>> Yes:
+>> Type := tarrow tint tint.
 
-type = tint | tarrow . . | metavariable int
-
-metavariables = map index (either unknown type)
-
-newmetavariable : type
-
-
-chase : index -> either unknown type -> ()
-chase i when metavariables(i) == unknown = unknown
-chase i when metavariables(i) == metavariable i' = chase i'
-chase i when metavariables(i) == t = t
-
-unify : type -> type -> ()
-
-main =
-  do x <- newmetavariable
-     typecheck [] term x
-     print(chase(x))
-
-
-typecheck : ctx -> term -> type -> ()
-
-
-typecheck G (intconst N) T =
-  do unify T tint
-
-typecheck G (add E1 E2) T =
-  do unify T tint
-     typecheck G E1 tint
-     typecheck G E2 tint
-
-
-typecheck G (app E1 E2) t' =
-  do t <- newmeta
-     typecheck G E1 (tarrow t t')
-     typecheck G E2 t
-
-typecheck G (lam X Body) tout =
-  do t <- newmeta
-     t' <- newmeta
-     unify tout (tarrow t t')
-     G' <- add (X, t) G
-     typecheck G' Body t'
-
-*)
+eval (app (tapp (tlam (fun a => (lam a (fun x => x)))) tint) (intconst 42)) Result ?
+>> Yes:
+>> Result := intconst 42.
