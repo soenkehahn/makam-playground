@@ -117,3 +117,25 @@ typecheck (tapp (tlam (fun a => (lam a (fun x => x)))) tint) Type ?
 eval (app (tapp (tlam (fun a => (lam a (fun x => x)))) tint) (intconst 42)) Result ?
 >> Yes:
 >> Result := intconst 42.
+
+typecheck (tlam (fun a => (tlam (fun b => (tlam (fun c =>
+  (lam (tarrow a b) (fun f => (lam (tarrow b c) (fun g =>
+    (lam a (fun x => app g (app f x))))))))))))) Type ?
+>> Yes:
+>> Type := forall (fun a => (forall (fun b => (forall (fun c =>
+  (tarrow (tarrow a b) (tarrow (tarrow b c) (tarrow a c)))))))).
+
+typecheck_and_eval
+  (app
+    (app
+      (app
+        (tapp (tapp (tapp (tlam (fun a => (tlam (fun b => (tlam (fun c =>
+          (lam (tarrow a b) (fun f => (lam (tarrow b c) (fun g =>
+            (lam a (fun x => app g (app f x))))))))))))) tint) tint) tint)
+          (lam (fun x => add x (intconst 1))))
+        (lam (fun x => add x (intconst 2))))
+    (intconst 23))
+  Type Result ?
+>> Yes:
+>> Type := tint,
+>> Result := intconst 26.
